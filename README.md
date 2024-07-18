@@ -1,2 +1,2 @@
 #Ask My Docs
-<br> . </br>
+<br> This is a tool to ask questions about my documents </br>
