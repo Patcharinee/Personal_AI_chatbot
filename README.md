@@ -1,2 +1,2 @@
 #Ask My Docs
-<br> This is a tool for asking questions about my documents </br>
+<br> In the process of developing a chatbot for asking questions about my documents </br>
