@@ -219,8 +219,9 @@ class AskMe:
             history_messages_key="chat_history",
             output_messages_key="answer",
         )
-        #print("orginal question: "+input_question)
-        #print("standalone question: "+standalone_question.content)
+        print("original question: "+input_question)
+        print("standalone question: "+standalone_question.content)
+   
         response = conversational_rag_chain.invoke(
             {"input": standalone_question.content,
             "chat_history": {}},
@@ -229,12 +230,11 @@ class AskMe:
             }
         )
         
-        
         return response 
 
     
 
-print(store)
+#print(store)
 #embed_docs()
 #print('Finished embedding docs')
 #a = AskMe()
@@ -242,4 +242,4 @@ print(store)
 #    print("original question: "+item)
 #    print(a.ask(item)['answer'])
 #    print('-----------------------------------------')
-print(store)
+#print(store)
