@@ -63,12 +63,17 @@ def embed_docs():
     #a list item = each page of the documents) 
 
     #add 'keyword' extracted from file name to metadata
+    keyword_list = set()
     for test_doc in documents:
         print(f"original: {test_doc.metadata}")
         res = test_doc.metadata['source'].split(sep='\\')
         keyword = res[len(res)-1].split(sep='.pdf')[0]
         test_doc.metadata['keyword'] = keyword 
         print(f"new: {test_doc.metadata}")
+        keyword_list.add(keyword)  
+    keyword_list = list(keyword_list)
+    print(type(keyword_list))
+    print(keyword_list)
     
 
     # split documents
@@ -78,6 +83,13 @@ def embed_docs():
     embeddings = OpenAIEmbeddings()
     # create vector database from data
     db = Chroma.from_documents(documents=docs, embedding=embeddings, persist_directory=persist_directory)
+    
+    # write keywords of the embedded documents to a file for future use
+    f = open("keyword_list.txt", "a")
+    for i in keyword_list:
+        f.write(f'{i},')
+    f.close()
+    print('successfully write keywords to file')
 
 
 client = openai.OpenAI()
