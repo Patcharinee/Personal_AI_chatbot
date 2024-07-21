@@ -1,2 +1,2 @@
 #Ask My Docs
-<br> In the process of developing a generative AI chatbot for asking questions about my documents </br>
+<br> A generative AI chatbot that can answer questions about your own documents and the world </br>
