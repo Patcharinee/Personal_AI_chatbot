@@ -7,8 +7,8 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 st.set_page_config(page_title="Ask Me", page_icon="🤖")
 st.title("Ask Me")
 with st.sidebar:
-    st.header("Settings")
-    fn_url = st.text_input("*****NOT USED****path of reference docs")
+    st.header("Embed your own documents")
+    fn_url = st.text_input("*****NOT USED****Enter path of reference doc folder here")
     embed_button = st.button("Embed")
 
 if "chat_history" not in st.session_state:
@@ -19,14 +19,27 @@ if "chat_history" not in st.session_state:
 #embed reference docs to vector store database
 if embed_button:
     embed_docs()
+    print('Finished embedding docs')
 
+#ask questions
 a = AskMe()
 user_query = st.chat_input("Type your question here...")
 if user_query is not None and user_query != "":
-    response = a.ask(user_query)['answer']
+    #response = a.ask(user_query)['answer']
+    response = a.ask(user_query)
+    print(response['answer'])
+    print(response['context'])
+        
     print('-----------------------------------------')
+    with st.sidebar:
+        st.subheader("Source :")
+        #st.write(response['context'])
+        for source in response['context']:
+            #st.write(source.metadata)
+            st.write(f'{source.metadata["source"]} page: {source.metadata["page"]}')
+
     st.session_state.chat_history.append(HumanMessage(content=user_query))
-    st.session_state.chat_history.append(AIMessage(content=response))
+    st.session_state.chat_history.append(AIMessage(content=response['answer']))
 
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
