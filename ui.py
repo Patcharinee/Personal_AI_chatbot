@@ -1,61 +1,42 @@
-import os
-import tempfile
 import streamlit as st
 from streamlit_chat import message
-from qa import AskMe
+from qa import embed_docs, AskMe
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-st.set_page_config(page_title="Ask Me")
 
-def display_message():
-    st.subheader("Chat")
-    for i, (msg, is_user) in enumerate(st.session_state["message"]):
-        message(msg, is_user=is_user, key=str(i))
-    st.session_state["thinking_spinner"] = st.empty()
+st.set_page_config(page_title="Ask Me", page_icon="🤖")
+st.title("Ask Me")
+with st.sidebar:
+    st.header("Settings")
+    fn_url = st.text_input("*****NOT USED****path of reference docs")
+    embed_button = st.button("Embed")
 
-def process_input():
-    if st.session_state["user_input"] and len(st.session_state["user_input"].strip()) > 0:
-        user_text = st.session_state["user_input"].strip()
-        with st.session_state["thinking_spinner"], st.spinner(f"Thinking"):
-            agent_text = st.session_state["assistant"].ask(user_text)
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+    AIMessage(content="Hello, I'm your Document bot. How can I help you?"),
+    ]
+    
+#embed reference docs to vector store database
+if embed_button:
+    embed_docs()
 
-        st.session_state["message"].append((user_text, True))
-        st.session_state["message"].append((agent_text, False))
+a = AskMe()
+user_query = st.chat_input("Type your question here...")
+if user_query is not None and user_query != "":
+    response = a.ask(user_query)['answer']
+    print('-----------------------------------------')
+    st.session_state.chat_history.append(HumanMessage(content=user_query))
+    st.session_state.chat_history.append(AIMessage(content=response))
 
-def read_and_save_file():
-    st.session_state["assistant"].clear()
-    st.session_state["message"] = []
-    st.session_state["user_input"] = ""
+for message in st.session_state.chat_history:
+    if isinstance(message, AIMessage):
+        with st.chat_message("AI"):
+            st.write(message.content)
+    elif isinstance(message, HumanMessage):
+        with st.chat_message("Human"):
+            st.write(message.content)
 
-    for file in st.session_state["file_uploader"]:
-        with tempfile.NamedTemporaryFile(delete=False) as tf:
-            tf.write(file.getbuffer())
-            file_path = tf.name
-        
-        with st.session_state["ingestion_spinner"], st.spinner(f"Ingesting {file.name}"):
-            st.session_state["assistant"].embed(file_path)
-        os.remove(file_path)
+# for n in st.session_state.chat_history:
+#     print(n)
 
-def page():
-    if len(st.session_state) == 0:
-        st.session_state["message"] = []
-        st.session_state["assistant"] = AskMe()
-
-    st.header("Ask Me")
-
-    st.subheader("Upload a document")
-    st.file_uploader(
-        "Upload document",
-        type=["pdf"],
-        key="file_uploader",
-        on_change=read_and_save_file,
-        label_visibility="collapsed",
-        accept_multiple_files=True,
-    )            
-
-    st.session_state["ingestion_spinner"] = st.empty()
-
-    display_message()
-    st.text_input("Message", key="user_input", on_change=process_input)
-
-if __name__ == "__main__":
-    page()
+print(st.session_state)
