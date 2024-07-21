@@ -1,175 +1,3 @@
-'''
-
-
-
-def load_db(file, chain_type, k):
-    # load documents
-    #loader = PyPDFLoader(file)
-    #documents = loader.load()
-    #load all documents in directory
-    loader = PyPDFDirectoryLoader(file)
-    documents = loader.load() # documents is a list (#of list items = total # of pages of all documents in the directory, 
-    #a list item = each page of the documents) 
-
-    #add 'keyword' extracted from file name to metadata
-    for test_doc in documents:
-        print(f"original: {test_doc.metadata}")
-        res = test_doc.metadata['source'].split(sep='\\')
-        keyword = res[len(res)-1].split(sep='.pdf')[0]
-        test_doc.metadata['keyword'] = keyword 
-        print(f"new: {test_doc.metadata}")
-    
-
-    # split documents
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=Chunk_size, chunk_overlap=Chunk_overlap) #chunk_size=1000, chunk_overlap=150
-    docs = text_splitter.split_documents(documents)
-    # define embedding
-    embeddings = OpenAIEmbeddings()
-    # create vector database from data
-    db = Chroma.from_documents(documents=docs, embedding=embeddings, persist_directory=persist_directory)
-    # define retriever
-    retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": k})
-    # create a chatbot chain. Memory is managed externally.
-    qa = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model_name=llm_name, temperature=0), 
-        chain_type=chain_type, 
-        retriever=retriever, 
-        return_source_documents=True,
-        return_generated_question=True,
-        verbose=True
-    )
-    return qa 
-
-import param
-
-class Cbfs(param.Parameterized):
-    chat_history = param.List([])
-    answer = param.String("")
-    db_query  = param.String("")
-    db_response = param.List([])
-    
-    def __init__(self,  **params):
-        super(Cbfs, self).__init__( **params)
-        self.panels = []
-    
-    def call_load_db(self, loaded_file):
-        self.loaded_file = loaded_file
-        self.qa = load_db(self.loaded_file, Chain_type, K) 
-    
-    def use_existing_db(self):
-        embeddings2 = OpenAIEmbeddings()
-        exdb = Chroma(persist_directory=persist_directory, embedding_function=embeddings2)
-        # define retriever
-        exretriever = exdb.as_retriever(search_type="similarity", search_kwargs={"k": K}) #k=4
-        # create a chatbot chain. Memory is managed externally.
-        self.qa = ConversationalRetrievalChain.from_llm(
-            llm=ChatOpenAI(model_name=llm_name, temperature=0), 
-            chain_type=Chain_type, #stuff
-            retriever=exretriever, 
-            return_source_documents=True,
-            return_generated_question=True,
-            verbose=True)
-
-    def convchain(self, query):
-        result = self.qa({"question": query, "chat_history": self.chat_history})
-        self.chat_history.extend([(query, result["answer"])])
-        self.db_query = result["generated_question"]
-        self.db_response = result["source_documents"]
-        self.answer = result['answer'] 
-
-
-
-
-
-
-
-cb = Cbfs()
-
-print(db_flag)
-if db_flag == 0:  #1st time to embed the documents and save to the vector database
-    loaded_file = "D:\Fai_personal\AI\Generative AI\MyProject\docs"
-    print('embed documents and save to database: '+loaded_file)
-    cb.call_load_db(loaded_file)
-else:             #otherwise just set up QA chain from existing vector database
-    print('use existing_db')
-    cb.use_existing_db()
-
-
-root=Tk()
-root.title('Ask me')
-root.iconbitmap('D:\Fai_personal\Graphics and audio\Little bunny boo boo\Bunnyicon.ico')
-
-def retrieve_input():
-    inputValue=textBox.get(1.0,END)
-    cb.convchain(query=inputValue) 
-    #clear textbox
-    textBox.delete(1.0,END)
-    #conversation = f"Question:\n{inputValue}Answer: No answer yet\n"
-    #question = f"Question: {inputValue}"
-    question = f"{inputValue} "
-    Output.insert(END, question,'color')
-    answer = f"    Answer: {cb.answer}\n"
-    Output.insert(END, answer)
-    ###########################new
-    rOutput.insert(END, f"Reference: {question}  --> {cb.db_query}\n", 'color2')
-    source = []
-    for doc in cb.db_response:
-        reference = f"File: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n"
-        rOutput.insert(END, reference, 'color1')
-        page_content = doc.page_content[0:500]
-        rOutput.insert(END, page_content+'.......\n')
-        source.append(doc) 
-    
-
-    
-
-#Font
-Font1 = ("Browallia New", 14)
-Font2 = ("Helvetica", 10) 
-
-#input textbox  
-textBox=Text(root, height=5, width=65, foreground='black', background='white')
-textBox.configure(font=Font1)
-textBox.grid(row=1, column=0, pady=1)
-
-#Enter button
-buttonCommit=Button(root, height=7, width=4, text="Ask", foreground='white', background='#7171C6',command=lambda: retrieve_input())
-buttonCommit.configure(font=Font2)
-buttonCommit.grid(row=1, column=1, padx=2)
-
-#output textbox with scrollbar
-scrollbar = Scrollbar(root, width=20)
-Output=Text(root, height=20, width=65, foreground='black', background='white',yscrollcommand = scrollbar.set)
-Output.configure(font=Font1)
-Output.grid(row=0, column=0, columnspan=1, padx=2)
-Output.tag_configure('color', foreground='#6959CD', font=('Browallia New', 14,'bold'))
-scrollbar.grid(row=0, column=1, sticky=NS)
-#scrollbar.grid(row-1,column=3, rowspan=5, sticky=N+S)
-scrollbar.config(command = Output.yview) 
-
-#show greeting message
-Output.insert(END, f"{greeting.content}\n")
-
-#output reference document with schrollbar
-rscrollbar = Scrollbar(root, width=20)
-rOutput=Text(root, height=12, width=65, foreground='black', background='#ebebfb',yscrollcommand = rscrollbar.set) ##e4e4f7 #d8d8f0  #b4b4e1
-rOutput.configure(font=Font1)
-rOutput.grid(row=0, column=2, columnspan=1, rowspan=2, padx=2, sticky=NS)
-rOutput.tag_configure('color1', foreground='#6959CD', font=('Browallia New', 14,'bold'))
-rOutput.tag_configure('color2', foreground='#38bb4a', font=('Browallia New', 15,'bold'))
-rscrollbar.grid(row=0, column=3, rowspan=2, sticky=NS)
-#scrollbar.grid(row-1,column=3, rowspan=5, sticky=N+S)
-rscrollbar.config(command = rOutput.yview) 
-
-
-mainloop()
-
-
-'''
-
-###################################################################################################
-
-
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain.document_loaders import TextLoader
@@ -204,8 +32,8 @@ llm = ChatOpenAI(model_name=llm_name, temperature=0)
 greeting = llm.invoke("Hello world!")
 print(greeting.content)
 
-########################variables###############################################
-#persist_directory = 'D:\Fai_personal\AI\Generative AI\MyProject\docs\db' 
+########################variables and constants###############################################
+
 persist_directory =  './db/'
 Chunk_size = 1000
 Chunk_overlap = 150
@@ -352,10 +180,6 @@ def create_retrieval(K,filter_dict):
 
 
 
-
-
-
-
 class AskMe:
     db = None
     retriever = None
@@ -405,16 +229,10 @@ class AskMe:
             }
         )
         
-        #greeting = llm.invoke(input_question)
-        #return greeting.content
-        #return response'''
         
         return response 
 
-    def clear(self):
-        self.db = None
-        self.retriever = None
-        self.chain = None
+    
 
 print(store)
 #embed_docs()
