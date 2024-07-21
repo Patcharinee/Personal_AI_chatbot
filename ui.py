@@ -8,12 +8,11 @@ st.set_page_config(page_title="Ask Me", page_icon="🤖")
 st.title("Ask Me")
 with st.sidebar:
     st.header("Embed your own documents")
-    fn_url = st.text_input("*****NOT USED****Enter path of reference doc folder here")
     embed_button = st.button("Embed")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-    AIMessage(content="Hello, I'm your Document bot. How can I help you?"),
+    AIMessage(content="Hello ! I'm your Document bot. How can I help you?"),
     ]
     
 #embed reference docs to vector store database
