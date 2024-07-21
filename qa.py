@@ -135,15 +135,16 @@ def create_standalone_question(input_question):
 
 # Extract keywords from standalone question to be used for document retrieval filtering #
 def extract_filter(standalone_question):
+    
+    # get keywords of embedded documents 
+    f = open("keyword_list.txt", "r")
+    keyword_list = f.read()
+    f.close()
+
     extract_metadata_prompt = f"""extract all related keywords from the question below. Pick only the ones from the keyword list as follows. If you don't know what keyword to pick,
     answer as blank. 
 
-    Keyword list: 
-    - NT conference
-    - Machine learning course
-    - Intelligent operation center IOC
-    - NT form
-    - Smart pole
+    Keyword list: {keyword_list}
 
     Question: {standalone_question.content}
 
@@ -154,6 +155,8 @@ def extract_filter(standalone_question):
     Example for keyword output:
     keyword: keyword1, keyword2, keyword3,...
     """
+    #print(extract_metadata_prompt)
+
 
     response = get_completion(extract_metadata_prompt, model=llm_name, temperature=0.0)
     #print(response)
