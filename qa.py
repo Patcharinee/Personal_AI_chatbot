@@ -39,7 +39,6 @@ Chunk_size = 1000
 Chunk_overlap = 150
 K = 4
 Chain_type = 'stuff'
-db_flag  = 0   # 0: embed docuements and save to vector database, 1: use existing vector database
 max_history_len = 10 #max number of latest chat history messages stored
 session_id = "test123"
 input_questions = ["what is the instructor of the machine learning class",
