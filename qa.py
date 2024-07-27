@@ -1,7 +1,6 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain.document_loaders import TextLoader
-from langchain.chains import RetrievalQA,  ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain_community.document_loaders import PyPDFLoader
@@ -16,8 +15,6 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain.output_parsers import ResponseSchema
 from langchain.output_parsers import StructuredOutputParser
 from langchain.output_parsers import CommaSeparatedListOutputParser
-from langchain_community.vectorstores.utils import filter_complex_metadata
-from langchain_community.embeddings import FastEmbedEmbeddings
 
 
 from dotenv import load_dotenv
