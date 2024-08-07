@@ -81,7 +81,7 @@ def embed_docs():
     db = Chroma.from_documents(documents=docs, embedding=embeddings, persist_directory=persist_directory)
     
     # write keywords of the embedded documents to a file for future use
-    f = open("keyword_list.txt", "a")
+    f = open("keyword_list.txt", "w")
     for i in keyword_list:
         f.write(f'{i},')
     f.close()
