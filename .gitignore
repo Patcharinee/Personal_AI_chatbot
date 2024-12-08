@@ -5,3 +5,4 @@ db/
 docs/
 keyword_list.txt
 .csv
+.venv/
