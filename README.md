@@ -1,4 +1,4 @@
-#Ask My Docs
+## Personal AI Chatbot
 
 <br> A generative AI chatbot that can answer questions about your documents and the world.</br>
 <br> Users can chat to ask questions and get answers in a conversational style.</br> 
