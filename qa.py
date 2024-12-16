@@ -50,9 +50,9 @@ store={}
 def embed_docs():
     loaded_file = "./docs/"
     print('embed documents and save to database: '+loaded_file)
-    # load documents
-    #loader = PyPDFLoader(file)
-    #documents = loader.load()
+
+
+
     #load all documents in directory
     loader = PyPDFDirectoryLoader(loaded_file)
     documents = loader.load() # documents is a list (#of list items = total # of pages of all documents in the directory, 
