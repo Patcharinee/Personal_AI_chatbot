@@ -4,15 +4,15 @@ from qa import embed_docs, AskMe
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 
-st.set_page_config(page_title="Ask Me", page_icon="🤖")
-st.title("Ask Me")
+st.set_page_config(page_title="Personal AI Chatbot", page_icon="🤖")
+st.title("Hi there !")
 with st.sidebar:
     st.header("Embed your own documents")
     embed_button = st.button("Embed")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-    AIMessage(content="Hello ! I'm your Document bot. How can I help you?"),
+    AIMessage(content="I'm your personal AI chatbot. How can I help you?"),
     ]
     
 #embed reference docs to vector store database
