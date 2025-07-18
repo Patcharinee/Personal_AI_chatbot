@@ -1,4 +1,4 @@
-# Personal AI Chatbot
+# 🤖  Personal AI Chatbot
 This generative AI chatbot is designed to answer questions both about your documents and a wide range of other topics.
 
 Users can interact with the chatbot in a natural, conversational manner. It maintains context throughout the discussion, allowing for more coherent and relevant responses.
